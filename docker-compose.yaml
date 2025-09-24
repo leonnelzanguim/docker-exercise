@@ -1,0 +1,43 @@
+version: "3"
+services:
+  my-java-app:
+    image: 167.172.176.212:8083/my-java-app:1.0
+    ports:
+      - 8080:8080
+    environment:
+      - DB_USER=${DB_USER} #user
+      - DB_PWD=${DB_PWD} #pass
+      - DB_SERVER=${DB_SERVER} #mysql
+      - DB_NAME=${DB_NAME} #dbuser
+    container-name: java-app
+    depends_on:
+      mysql:
+        condition: service_healthy
+  mysql:
+    image: mysql
+    ports:
+      - 3307:3306
+    volumes:
+      - db-data:/var/lib/mysql
+    container_name: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}  #admin
+      - MYSQL_DATABASE=${MYSQL_DATABASE}   #dbuser
+      - MYSQL_USER=${MYSQL_USER}    #user
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}   #pass
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - 8081:80
+    container_name: phpmyadmin
+    restart: always
+    environment:
+      - PMA_HOST=${PMA_HOST} #mysql
+volumes:
+  db-data:
+    driver: local
